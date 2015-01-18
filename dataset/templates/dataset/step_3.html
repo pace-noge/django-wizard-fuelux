@@ -1,0 +1,22 @@
+<h3>{{ title }}</h3>
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    {% for article in articles %}
+        <div class="panel panel-primary">
+            <div class="panel-heading" role="tab" id="heading_{{ article.id }}">
+                <h4 class="panel-title">
+                    <a href="#article_{{ article.id }}" data-toggle="collapse" data-parent="#accordion" aria-expanded="true" aria-controls="article_{{ article.id }}">
+                        {{ article }}
+                    </a>
+                </h4>
+            </div>
+            <div id="article_{{ article.id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading">
+                <div class="panel-body">
+                    <a href="#" class="btn btn-primary">Add Property</a>
+                    {% for property in article.articleproperty_set.all %}
+                        {{ property.name }}: {{ property.value }}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>

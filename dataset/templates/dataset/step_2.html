@@ -1,22 +1,85 @@
+<h3>{{ title }}</h3>
 <form id="publication_item" action="#" method="post">
 {% csrf_token %}
-            <select multiple="multiple" size="10" name="duallistbox_item[]">
-              {% for all_article in all_articles %}
-                    {% if all_article in articles %}
-                        <option value="{{ all_article.id }}" selected>{{ all_article.headline }}</option>
-                    {% else %}
-                        <option value="{{ all_article.id }}">{{ all_article.headline }}</option>
-                    {% endif %}
-              {% endfor %}
-            </select>
-            <br>
-            <button type="submit" class="btn btn-default btn-block">Submit data</button>
-          </form>
+<input type="hidden" id="publication_id" value="{{ publication_id }}" />
+<select multiple="multiple" size="10" name="duallistbox_item[]" id="multi_article">
+  {% for article in articles %}
+        {% if article in selected_articles %}
+            <option value="{{ article.id }}" selected>{{ article.headline }}</option>
+        {% else %}
+            <option value="{{ article.id }}">{{ article.headline }}</option>
+        {% endif %}
+  {% endfor %}
+</select>
+<br />
+<br />
+<button type="button" class="btn btn-default btn-block" id="update_publication">Submit data</button>
+</form>
+<br />
+<br />
 
-          <script>
-            var pubication_item = $('select[name="duallistbox_item[]"]').bootstrapDualListbox();
-            $("#demoform").submit(function() {
-              alert($('[name="duallistbox_item[]"]').val());
-              return false;
-            });
-          </script>
+<a href="#new_article" class="btn btn-primary" data-toggle="collapse">New Article</a>
+<br />
+<br />
+<div class="collapse" id="new_article">
+    <div class="well">
+        <form class="form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="headline" class="form-label">Headline</label>
+                <input type="text" name="headline" id="headline" class="form-control"/>
+            </div>
+            <button class="btn btn-primary" type="button" id="btn_article">Save</button>
+        </form>
+    </div>
+</div>
+
+<script>
+var publication_item = $('select[name="duallistbox_item[]"]').bootstrapDualListbox();
+    $("#demoform").submit(function() {
+      alert($('[name="duallistbox_item[]"]').val());
+      return false;
+    });
+
+$('#btn_article').click(function() {
+    var action = "new";
+    var headline = $('#headline').val();
+    var csrf_token = $('input[name=csrfmiddlewaretoken').val();
+    $.ajax({
+        "type": "POST",
+        "url": "/dataset/article/",
+        "data": {"action": action, "headline": headline, "csrfmiddlewaretoken": csrf_token},
+        "success": function(data) {
+            console.log(data);
+            if(data.status == "success") {
+                var publication_item = $('select[name="duallistbox_item[]"]').bootstrapDualListbox();
+                var option = "<option value='" + data.article.id + "'>" + data.article.headline + "</option>";
+                $('#multi_article').append(option);
+               $('select[name="duallistbox_item[]"]').bootstrapDualListbox('refresh', true);
+               $('#headline').val("");
+            }
+        }
+    });
+});
+
+$('#update_publication').click(function() {
+    //alert($('[name="duallistbox_item[]"]').val());
+    var pub_id = $("#publication_id").val()
+    var article = $('[name="duallistbox_item[]"]').val();
+    var csrf_token = $('input[name=csrfmiddlewaretoken').val();
+    var data = {'action': "update_publication", 'publication_id': pub_id, "articles[]": article, "csrfmiddlewaretoken": csrf_token};
+    console.log(data);
+    $.ajax({
+        "type": "POST",
+        "url": "/dataset/article/",
+        "data": data,
+        "success": function(data) {
+            if (data.status == 'success') {
+                $('#step3').html('&nbsp;').load('{% url "publication" %}?id=' + pub_id + '&step=3');
+                $('#dataset').wizard('next');
+            }
+        }
+    });
+});
+
+</script>

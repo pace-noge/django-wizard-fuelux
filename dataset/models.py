@@ -26,7 +26,7 @@ class Article(models.Model):
 
 class ArticleProperty(models.Model):
     name = models.CharField(max_length=25)
-    property = models.CharField(max_length=100)
+    value = models.CharField(max_length=100)
     article = models.ForeignKey(Article)
 
     def __unicode__(self):

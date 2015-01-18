@@ -24,14 +24,19 @@ def publication(request):
             return HttpResponse(json.dumps(response_data), content_type="application/json")
         else:
             publication_id = request.GET.get('id')
+            step = request.GET.get('step')
             publication = Publication.objects.get(id=publication_id)
-            article = publication.article_set.all()
-            all_article = Article.objects.all()
-            template = "dataset/step_2.html"
+            selected_articles = publication.article_set.all()
+            articles = Article.objects.all()
+            if step == "2":
+                template = "dataset/step_2.html"
+            elif step == "3":
+                template = "dataset/step_3.html"
             data = {
                 "title": publication.title,
-                "articles": article,
-                "all_articles": all_article
+                "publication_id": publication_id,
+                "articles": articles,
+                "selected_articles": selected_articles
             }
             return render_to_response(template, data, context_instance=RequestContext(request))
 
@@ -40,5 +45,30 @@ def publication(request):
 
 def article(request):
     if request.is_ajax():
-        article = request.GET.get('publication')
-        article = Article.publication.all()
+        response_data = {}
+        if request.method == "POST":
+            if request.POST.get('action') == "new":
+                article = request.POST.get('headline')
+                a = Article(headline=article)
+                a.save()
+
+                response_data['status'] = "success"
+                response_data["article"] = {'id': a.id, 'headline': a.headline}
+                return HttpResponse(json.dumps(response_data), content_type="application/json")
+            elif request.POST.get('action') == "update_publication":
+                pub_id = request.POST.get('publication_id')
+                p = Publication.objects.get(id=pub_id)
+                # clear publication relation
+                p.article_set.clear()
+                articles = request.POST.getlist('articles[]')
+                # print len(articles)
+                if articles[0] != "":
+                    for article in articles:
+                        a = Article.objects.get(id=article)
+                        p.article_set.add(a)
+                    response_data["status"] = "success"
+                    return HttpResponse(json.dumps(response_data), content_type='application/json')
+    response_data["status"] = "Unknown request"
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+

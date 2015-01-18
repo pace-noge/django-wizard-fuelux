@@ -57,6 +57,11 @@
                 <div id="step2"></div>
             </div>
 
+            <!-- EOF step 2 -->
+            <div class="step-pane sample-pane alert" data-step="3">
+                <div id="step3"></div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -89,7 +94,7 @@
 
         $('#publications').change(function(){
             var id = $('#publications option:selected').val();
-            $('#step2').html('&bsp;').load('{% url "publication" %}?id=' + id);
+            $('#step2').html('&nbsp;').load('{% url "publication" %}?id=' + id + '&step=2');
             $('#dataset').wizard('next');
         })
     });
