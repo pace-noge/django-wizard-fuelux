@@ -1,6 +1,6 @@
 from django.shortcuts import render, render_to_response
 from django.template.context import RequestContext
-from .models import Publication, Article
+from .models import Publication, Article, ArticleProperty
 from django.http import HttpResponse
 import json
 
@@ -70,5 +70,27 @@ def article(request):
                     return HttpResponse(json.dumps(response_data), content_type='application/json')
     response_data["status"] = "Unknown request"
     return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
+def article_property(request):
+    if request.is_ajax():
+        response_data = {}
+        if request.method == "POST":
+            name = request.POST.get('name')
+            value = request.POST.get('value')
+            article_id = request.POST.get('article_id')
+            article = Article.objects.get(id=article_id)
+            article_property = ArticleProperty(article=article, name=name, value=value)
+            try:
+                article_property.save()
+                response_data["status"] = "success"
+                response_data["name"] = name
+                response_data["value"] = value
+                response_data["article_id"] = article_id
+            except:
+                response_data["status"] = "failed"
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
 
 
